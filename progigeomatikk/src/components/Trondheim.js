@@ -15,6 +15,12 @@ function Trondheim() {
   const [lat, setlat] = useState(63.426827);
 
   const [geojsonFile, setGeojsonFile] = useState(null);
+
+  function handleType(type){
+      if (type == "MultiPolygon"){
+
+      }
+  }
   
   function handleFileChange(event) {
       const reader = new FileReader();
@@ -32,6 +38,8 @@ function Trondheim() {
   function addFileToMap(map, geojson) {
     console.log(JSON.stringify(geojson))
     console.log(map)
+    const type = geojson.features[0].geometry.type;
+    console.log(type)
     if (geojson) {
       const id = `new-source-${Math.floor(Math.random() * 1000)}`
       console.log(id)
@@ -39,15 +47,38 @@ function Trondheim() {
         type: 'geojson',
         data: geojson,
       });
-      map.addLayer({
-        id: id,
-        type: 'line',
-        source: id,
-        paint: {
-          'line-color': 'red',
-          'line-width': 2,
-        },
-      });
+      if (type === "LineString"){ 
+          map.addLayer({
+            id: id,
+            type: 'line',
+            source: id,
+            paint: {
+              'line-color': 'red',
+              'line-width': 2,
+            },
+          });}
+      if (type === "Point"){
+        map.addLayer({
+          id: id,
+          type: 'circle',
+          source: id,
+          paint:{
+            'circle-radius': 5,
+            'circle-color': 'blue',
+          }
+        })
+      }
+      if (type === 'MultiPolygon'){
+        map.addLayer({
+          id: id,
+          type: 'fill',
+          source: id,
+          paint:{
+            'fill-color': 'green',
+            'fill-opacity': 0.5
+          }
+        })
+      }
 
     }
   }
