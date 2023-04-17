@@ -4,23 +4,18 @@ import { useState, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
 
 
-
 mapboxgl.accessToken = "pk.eyJ1IjoiaWxsaGVjayIsImEiOiJjbGcyY203MHUwNDdtM2VtcHRqdHJ5aXlnIn0.hJ_PhF4QSRP6CPE2tKwY9A"
 
 
 function Trondheim() {
   const [map, setMap] = useState(null);
+  const [id, setId] = useState(null);
 
   const [lng, setlng] = useState(10.421906);
   const [lat, setlat] = useState(63.426827);
 
   const [geojsonFile, setGeojsonFile] = useState(null);
 
-  function handleType(type){
-      if (type == "MultiPolygon"){
-
-      }
-  }
   
   function handleFileChange(event) {
       const reader = new FileReader();
@@ -43,6 +38,7 @@ function Trondheim() {
     if (geojson) {
       const id = `new-source-${Math.floor(Math.random() * 1000)}`
       console.log(id)
+      setId(id);
       map.addSource(id, {
         type: 'geojson',
         data: geojson,
@@ -79,26 +75,53 @@ function Trondheim() {
           }
         })
       }
-
     }
   }
+
+  function removeFile(map, geojson){
+    if (map.getLayer(id)){
+      map.removeLayer(id);
+      map.removeSource(id);
+    }
+  }
+
+
+  function markGeoJSON(map){
+    map.on('click', id, (e) => {
+      const feature = e.feature[0];
+      const coor = feature.geometry.coordinates.slice();
+      
+
+      const marker = new mapboxgl.Marker().setLngLat(coor).addTo(map)
+      const popUp = new mapboxgl.Popup().setHTML('<h1>hei<h1>')
+
+      marker.setPopup(popUp)
+      map.flyTo({
+        center: coor,
+        zoom: 10
+      });
+    })
+  }
+
+
   
   useEffect(() => {
-    const newMap = new mapboxgl.Map({
+    setMap(new mapboxgl.Map({
       container: 'trondheim',
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [lng, lat],
       zoom: 12,
-    });
-    setMap(newMap);
-  }, []);
+    }));
+}, []);
 
 
   return (
     <>
     <input type="file" onChange={handleFileChange}/>
     <button onClick={() => addFileToMap(map, geojsonFile)}>Upload</button>
+    <button onClick={() => removeFile(map, geojsonFile)}>Delete</button>
     <div id="trondheim" style={{ height: '500px' }}>
+      
       </div>
       </>
   );
