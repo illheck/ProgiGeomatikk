@@ -1,10 +1,10 @@
 import '../App.css';
 import Map, {NavigationControl} from "react-map-gl";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 
 
-mapboxgl.accessToken = "pk.eyJ1IjoiaWxsaGVjayIsImEiOiJjbGcyY203MHUwNDdtM2VtcHRqdHJ5aXlnIn0.hJ_PhF4QSRP6CPE2tKwY9A"
+mapboxgl.accessToken = "pk.eyJ1IjoiaWxsaGVjayIsImEiOiJjbHVtaDU2Z2IxMHNrMmpsNTNtNjRiYzdiIn0.gWSqf7Sd1J_znIEDQ8E19Q"
 
 
 function Trondheim() {
@@ -16,6 +16,9 @@ function Trondheim() {
 
   const [geojsonFile, setGeojsonFile] = useState(null);
 
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+
   
   function handleFileChange(event) {
       const reader = new FileReader();
@@ -24,7 +27,6 @@ function Trondheim() {
       const content = reader.result;
       const geojson = JSON.parse(content);
       setGeojsonFile(geojson);
-      setMap(map);
       
     };
     reader.readAsText(file);
@@ -102,17 +104,19 @@ function Trondheim() {
       });
     })
   }
-
-
   
   useEffect(() => {
-    setMap(new mapboxgl.Map({
-      container: 'trondheim',
+    if (mapRef.current) return; // If map already exists, do not recreate it
+  
+    const newMap = new mapboxgl.Map({
+      container: mapContainerRef.current,
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [lng, lat],
       zoom: 12,
-    }));
-}, []);
+    });
+  
+    mapRef.current = newMap; // Store map instance in ref
+  }, []);
 
 
   return (
@@ -120,8 +124,7 @@ function Trondheim() {
     <input type="file" onChange={handleFileChange}/>
     <button onClick={() => addFileToMap(map, geojsonFile)}>Upload</button>
     <button onClick={() => removeFile(map, geojsonFile)}>Delete</button>
-    <div id="trondheim" style={{ height: '500px' }}>
-      
+    <div ref={mapContainerRef} id="trondheim" style={{ height: '500px' }}>   
       </div>
       </>
   );

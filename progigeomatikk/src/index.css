@@ -7,7 +7,32 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/*
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.content-wrapper {
+  display: flex;
+}
+
+.navigation-menu {
+  width: 200px;
+  background-color: #f0f0f0;
+  padding: 16px;
+}
+
+.navigation-menu ul {
+  list-style: none;
+  padding: 0;
+}
+
+.navigation-menu li {
+  margin-bottom: 8px;
+}
+
+/* Juster plasseringen av kartet */
+.trondheim-map {
+  flex: 1;
 }
