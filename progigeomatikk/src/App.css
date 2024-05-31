@@ -13,6 +13,8 @@
   }
 }
 
+
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -26,6 +28,32 @@
 
 .App-link {
   color: #61dafb;
+}
+
+.App {
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.content-wrapper {
+  display: flex;
+  height: calc(100vh - 50px); /* Adjust height according to your needs */
+}
+
+.NavigationMenu {
+  width: 20%; /* Adjust the width as needed */
+  background-color: #f0f0f0; /* Optional: background color */
+  padding: 10px;
+}
+
+.Trondheim {
+  width: 80%; /* Remaining width */
+  padding: 10px;
+  background-color: #ffffff; /* Optional: background color */
 }
 
 @keyframes App-logo-spin {

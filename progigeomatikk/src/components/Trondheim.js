@@ -135,6 +135,7 @@ function Trondheim() {
 
   return (
     <>
+    <div className='Trondheim'>
       <input type="file" onChange={handleFileChange} />
       <button onClick={() => {
         if (mapRef.current && geojsonFile) {
@@ -152,6 +153,7 @@ function Trondheim() {
         Delete
       </button>
       <div ref={mapContainerRef} id="trondheim" style={{ height: '500px' }} />
+      </div>
     </>
   );
 }
