@@ -1,32 +1,21 @@
-// // src/App.js
-// import React from 'react';
 
-// function NavigationMenu() {
-//   // Legg til logikk for å vise filene i navigasjonsmenyen
-
-//   return (
-//     <div className="navigation-menu">
-//     <h2>Filer</h2>
-//     <ul>
-//       {files.map((file, index) => (
-//         <li key={index}>{file}</li>
-//       ))}
-//     </ul>
-//   </div>
-//   );
-// }
-
-// export default NavigationMenu
 
 import React from 'react';
 
-function NavigationMenu() {
-
-  const files = ['file1.geojson', 'file2.geojson', 'file3.geojson'];
-
+function NavigationMenu({ geojsonFile, fileName }) {
   return (
     <div className="NavigationMenu">
-      {files}
+      <h2>Navigation Menu</h2>
+      {fileName ? (
+        <div>
+          <h3>Uploaded File:</h3>
+          <button onClick={() => { console.log("File clicked"); }}>
+            {fileName}
+          </button>
+        </div>
+      ) : (
+        <p>No file uploaded</p>
+      )}
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import '../App.css';
-import Map, {NavigationControl} from "react-map-gl";
 import { useState, useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 
@@ -7,14 +6,12 @@ import mapboxgl from 'mapbox-gl';
 mapboxgl.accessToken = "pk.eyJ1IjoiaWxsaGVjayIsImEiOiJjbHVtaDU2Z2IxMHNrMmpsNTNtNjRiYzdiIn0.gWSqf7Sd1J_znIEDQ8E19Q"
 
 
-function Trondheim() {
-  const [map, setMap] = useState(null);
+function Trondheim({geojsonFile, setGeojsonFile, setFileName}) {
   const [id, setId] = useState(null);
 
-  const [lng, setlng] = useState(10.421906);
-  const [lat, setlat] = useState(63.426827);
+  const [lng] = useState(10.421906);
+  const [lat] = useState(63.426827);
 
-  const [geojsonFile, setGeojsonFile] = useState(null);
 
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -23,6 +20,7 @@ function Trondheim() {
   function handleFileChange(event) {
       const reader = new FileReader();
       const file = event.target.files[0];
+      setFileName(file.name)
       reader.onload = function() {
         try{
           const content = reader.result;
