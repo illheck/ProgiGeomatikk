@@ -13,6 +13,10 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
   function handleFileChange(event) {
     const reader = new FileReader();
     const file = event.target.files[0];
+    if (!file) {
+      // No file was selected, return early
+      return;
+    }
     reader.onload = function() {
       try {
         const content = reader.result;
