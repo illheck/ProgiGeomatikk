@@ -1,20 +1,20 @@
-
-
 import React from 'react';
 
-function NavigationMenu({ geojsonFile, fileName }) {
+function NavigationMenu({ geojsonFiles, handleDeleteFile }) {
   return (
     <div className="NavigationMenu">
       <h2>Navigation Menu</h2>
-      {fileName ? (
-        <div>
-          <h3>Uploaded File:</h3>
-          <button onClick={() => { console.log("File clicked"); }}>
-            {fileName}
-          </button>
-        </div>
+      {geojsonFiles.length > 0 ? (
+        <ul>
+          {geojsonFiles.map((file, index) => (
+            <li key={index}>
+              {file.name}
+              <button onClick={() => handleDeleteFile(index)}>Delete</button>
+            </li>
+          ))}
+        </ul>
       ) : (
-        <p>No file uploaded</p>
+        <p>No files uploaded</p>
       )}
     </div>
   );
