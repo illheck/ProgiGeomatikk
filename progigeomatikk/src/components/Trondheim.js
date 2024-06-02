@@ -1,6 +1,8 @@
 import '../App.css';
 import mapboxgl from 'mapbox-gl';
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import * as turf from '@turf/turf';
+
 
 mapboxgl.accessToken = "pk.eyJ1IjoiaWxsaGVjayIsImEiOiJjbHVtaDU2Z2IxMHNrMmpsNTNtNjRiYzdiIn0.gWSqf7Sd1J_znIEDQ8E19Q";
 
@@ -90,6 +92,22 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
     }
   };
 
+  function highlightFileOnMap(geojson) {
+    if (!mapRef.current || !geojson) return;
+    const bbox = turf.bbox(geojson);
+    mapRef.current.fitBounds(bbox, { padding: 20 });
+  }
+
+  useImperativeHandle(ref, () => ({
+    removeFileFromMap(id) {
+      if (mapRef.current) {
+        removeFileFromMap(mapRef.current, id);
+      }
+    },
+    highlightFileOnMap(geojson) {
+      highlightFileOnMap(geojson);
+    }
+  }));
   useEffect(() => {
     if (mapRef.current) return; // If map already exists, do not recreate it
 

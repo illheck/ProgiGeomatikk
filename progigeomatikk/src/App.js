@@ -20,11 +20,18 @@ function App() {
     }
   }
 
+  function handleHighlightFile(index) {
+    const fileToHighlight = geojsonFiles[index];
+    if (fileToHighlight && TrondheimRef.current) {
+      TrondheimRef.current.highlightFileOnMap(fileToHighlight.geojson);
+    }
+  }
+
   return (
     <div className="App">
       <h1>GIS-app</h1>
       <div className="content-wrapper">
-        <NavigationMenu geojsonFiles={geojsonFiles} handleDeleteFile={handleDeleteFile} />
+        <NavigationMenu geojsonFiles={geojsonFiles} handleDeleteFile={handleDeleteFile} handleHighlightFile={handleHighlightFile}/>
         <GisPanel geojsonFiles={geojsonFiles} setGeojsonFiles={setGeojsonFiles} />
         <Trondheim
           ref={TrondheimRef}
