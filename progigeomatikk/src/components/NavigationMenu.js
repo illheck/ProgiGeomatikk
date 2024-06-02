@@ -3,7 +3,7 @@ import React from 'react';
 function NavigationMenu({ geojsonFiles, handleDeleteFile }) {
   return (
     <div className="NavigationMenu">
-      <h2>Navigation Menu</h2>
+      <h2>Files</h2>
       {geojsonFiles.length > 0 ? (
         <ul>
           {geojsonFiles.map((file, index) => (

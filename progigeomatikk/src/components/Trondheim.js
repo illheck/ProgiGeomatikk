@@ -5,36 +5,18 @@ import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 're
 mapboxgl.accessToken = "pk.eyJ1IjoiaWxsaGVjayIsImEiOiJjbHVtaDU2Z2IxMHNrMmpsNTNtNjRiYzdiIn0.gWSqf7Sd1J_znIEDQ8E19Q";
 
 const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList, handleDeleteFile }, ref) => {
-  const [lng, setlng] = useState(10.421906);
-  const [lat, setlat] = useState(63.426827);
+  const [lng, setLng] = useState(10.421906);
+  const [lat, setLat] = useState(63.426827);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
 
-  function handleFileChange(event) {
-    const reader = new FileReader();
-    const file = event.target.files[0];
-    if (!file) {
-      // No file was selected, return early
-      return;
-    }
-    reader.onload = function() {
-      try {
-        const content = reader.result;
-        const geojson = JSON.parse(content);
-        if (geojson && geojson.features) {
-          setGeojsonFiles(prevFiles => [...prevFiles, { name: file.name, geojson }]);
-        } else {
-          console.error("Invalid geoJSON file");
-        }
-      } catch (error) {
-        console.error("Error parsing geoJSON file", error);
-      }
-    };
-    reader.readAsText(file);
-  }
-
   function addFileToMap(map, geojson, id) {
     if (!map || !geojson) return;
+    if (!geojson.features || geojson.features.length === 0) {
+      console.error("Invalid GeoJSON: No features found.");
+      return;
+    }
+
     const type = geojson.features[0].geometry.type;
     map.addSource(id, {
       type: 'geojson',
@@ -60,7 +42,7 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
           'circle-color': 'blue',
         }
       });
-    } else if (type === 'MultiPolygon') {
+    } else if (type === 'MultiPolygon' || type === 'Polygon') {
       map.addLayer({
         id: id,
         type: 'fill',
@@ -88,6 +70,26 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
     }
   }));
 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const geojson = JSON.parse(reader.result);
+          if (geojson.features) {
+            setGeojsonFiles(prevFiles => [...prevFiles, { name: file.name, geojson }]);
+          } else {
+            alert("Invalid GeoJSON file.");
+          }
+        } catch (e) {
+          alert("Error reading GeoJSON file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
   useEffect(() => {
     if (mapRef.current) return; // If map already exists, do not recreate it
 
@@ -104,8 +106,10 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
   useEffect(() => {
     if (mapRef.current && geojsonFiles.length) {
       const newFiles = geojsonFiles.slice(idList.length); // Only add new files
+      console.log("New files to add:", newFiles);
       newFiles.forEach((file, index) => {
         const id = `new-source-${idList.length + index}`;
+        console.log("Adding file to map:", file.name, id);
         addFileToMap(mapRef.current, file.geojson, id);
         setIdList(prevIdList => [...prevIdList, id]);
       });

@@ -1,0 +1,31 @@
+.gisPanel {
+    width: 20%;
+    padding: 10px;
+    background-color: #61dafb;
+    border-right: 1px solid #ccc;
+    height: 100%;
+    box-sizing: border-box;
+  }
+  
+  .gisPanel select {
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 5px;
+  }
+  
+  .gisPanel label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .gisPanel button {
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 5px;
+  }
+  
+  .gisPanel pre {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+  }
