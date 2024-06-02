@@ -51,6 +51,9 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
         case 'intersect':
           result = turf.intersect(turfObj1.features[0], turfObj2.features[0]);
           break;
+        case 'union':
+            result = turf.union(turfObj1.features[0], turfObj2.features[0]);
+            break;
         default:
           alert('Selected function is not implemented.');
           return;
@@ -85,6 +88,7 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
       <select value={selectedFunction} onChange={handleFunctionChange}>
         <option value="">Select Functionality</option>
         <option value="intersect">Intersect</option>
+        <option value="union">Union</option>
         {/* Add more options for other functionalities here */}
       </select>
 
