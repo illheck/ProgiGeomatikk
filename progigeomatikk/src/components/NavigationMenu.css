@@ -1,0 +1,33 @@
+.NavigationMenu {
+    width: 20%;
+    background-color: #f0f0f0; /* Optional: background color */
+    padding: 10px;
+    height: 100%;
+    box-sizing: border-box;
+  }
+  
+  .NavigationMenu ul {
+    list-style-type: none; /* Remove the black dots */
+    padding: 0; /* Remove default padding */
+  }
+  
+  .NavigationMenu li {
+    border: 1px solid #ccc; /* Add border around each file item */
+    border-radius: 5px; /* Optional: add border radius */
+    padding: 10px;
+    margin-bottom: 10px; /* Add space between items */
+  }
+  
+  .NavigationMenu .file-name {
+    margin-bottom: 10px; /* Space between filename and buttons */
+  }
+  
+  .NavigationMenu .button-group {
+    display: flex;
+    gap: 5px; /* Add space between buttons */
+  }
+  
+  .NavigationMenu .button-group button {
+    flex: 1 1 auto; /* Allow buttons to grow and shrink */
+    min-width: 0; /* Ensure buttons do not grow too large */
+  }

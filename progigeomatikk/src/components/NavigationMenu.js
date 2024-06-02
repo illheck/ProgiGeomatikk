@@ -1,7 +1,10 @@
 import React from 'react';
+import './NavigationMenu.css';
+
 
 function NavigationMenu({ geojsonFiles, handleDeleteFile, handleHighlightFile }) {
-  
+
+
   const handleDownloadFile = (file) => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(file.geojson));
     const downloadAnchorNode = document.createElement('a');
@@ -19,11 +22,13 @@ function NavigationMenu({ geojsonFiles, handleDeleteFile, handleHighlightFile })
       {geojsonFiles.length > 0 ? (
         <ul>
           {geojsonFiles.map((file, index) => (
-            <li key={index}>
-              {file.name}
-              <button onClick={() => handleHighlightFile(index)}>Highlight</button>
-              <button onClick={() => handleDownloadFile(file)}>Download</button>
-              <button onClick={() => handleDeleteFile(index)}>Delete</button>
+              <li key={index}>
+              <div className="file-name">{file.name}</div>
+              <div className="button-group">
+                <button onClick={() => handleHighlightFile(index)}>Highlight</button>
+                <button onClick={() => handleDeleteFile(index)}>Delete</button>
+                <button onClick={() => handleDownloadFile(file)}>Download</button>
+              </div>
             </li>
           ))}
         </ul>
