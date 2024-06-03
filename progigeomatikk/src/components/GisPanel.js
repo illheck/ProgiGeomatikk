@@ -7,10 +7,12 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
   const [result, setResult] = useState(null);
   const [selectedFunction, setSelectedFunction] = useState('');
   const [selectedFiles, setSelectedFiles] = useState({ file1: null, file2: null });
+  const [bufferDistance, setBufferDistance] = useState(0);
 
   const handleFunctionChange = (event) => {
     setSelectedFunction(event.target.value);
     setSelectedFiles({ file1: null, file2: null });
+    setBufferDistance(0);
     setResult(null);
   };
 
@@ -23,14 +25,29 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
   };
 
   const validateInput = () => {
-    if (!selectedFiles.file1 || !selectedFiles.file2) {
-      alert('Please select two GeoJSON files.');
-      return false;
+    if (selectedFunction === 'buffer') {
+      if (!selectedFiles.file1) {
+        alert('Please select a GeoJSON file.');
+        return false;
+      }
+      if (bufferDistance <= 0) {
+        alert('Please enter a valid buffer distance.');
+        return false;
+      }
+    } else if (selectedFunction === 'union' || selectedFunction === 'intersect') {
+      if (!selectedFiles.file1 || !selectedFiles.file2) {
+        alert('Please select two GeoJSON files.');
+        return false;
+      }
     }
 
     try {
-      convertGeoJsonToTurf(selectedFiles.file1.geojson);
-      convertGeoJsonToTurf(selectedFiles.file2.geojson);
+      if (selectedFunction === 'buffer') {
+        convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon', 'LineString', 'Point']);
+      } else {
+        convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon']);
+        convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
+      }
     } catch (error) {
       alert(error.message);
       return false;
@@ -43,17 +60,20 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
     if (!validateInput()) return;
 
     try {
-      const turfObj1 = convertGeoJsonToTurf(selectedFiles.file1.geojson);
-      const turfObj2 = convertGeoJsonToTurf(selectedFiles.file2.geojson);
-
+      const turfObj1 = convertGeoJsonToTurf(selectedFiles.file1.geojson, selectedFunction === 'buffer' ? ['MultiPolygon', 'Polygon', 'LineString', 'Point'] : ['MultiPolygon', 'Polygon']);
       let result;
       switch (selectedFunction) {
         case 'intersect':
+          const turfObj2 = convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
           result = turf.intersect(turfObj1.features[0], turfObj2.features[0]);
           break;
         case 'union':
-            result = turf.union(turfObj1.features[0], turfObj2.features[0]);
-            break;
+          const unionTurfObj2 = convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
+          result = turf.union(turfObj1.features[0], unionTurfObj2.features[0]);
+          break;
+        case 'buffer':
+          result = turf.buffer(turfObj1.features[0], bufferDistance, { units: 'meters' });
+          break;
         default:
           alert('Selected function is not implemented.');
           return;
@@ -69,13 +89,9 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
           geojson: resultGeojson,
         };
         setResult(resultGeojson);
-        setGeojsonFiles((prevFiles) => {
-          console.log("Previous files:", prevFiles);
-          console.log("Adding new file:", newFile);
-          return [...prevFiles, newFile];
-        });
+        setGeojsonFiles((prevFiles) => [...prevFiles, newFile]);
       } else {
-        alert('No intersection found.');
+        alert('No result found.');
       }
     } catch (error) {
       console.error('Error performing function:', error);
@@ -89,10 +105,37 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
         <option value="">Select Functionality</option>
         <option value="intersect">Intersect</option>
         <option value="union">Union</option>
-        {/* Add more options for other functionalities here */}
+        <option value="buffer">Buffer</option>
       </select>
 
-      {selectedFunction && (
+      {selectedFunction === 'buffer' && (
+        <div>
+          <label>
+            Select File:
+            <select onChange={(event) => handleFileChange(event, 'file1')}>
+              <option value="">Select a file</option>
+              {geojsonFiles.map((file, index) => (
+                <option key={index} value={index}>
+                  {file.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Buffer Distance (meters):
+            <input 
+              type="number" 
+              value={bufferDistance} 
+              onChange={(event) => setBufferDistance(event.target.value)} 
+            />
+          </label>
+
+          <button onClick={handleRunFunction}>Run</button>
+        </div>
+      )}
+
+      {(selectedFunction === 'intersect' || selectedFunction === 'union') && (
         <div>
           <label>
             Select File 1:

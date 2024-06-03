@@ -1,30 +1,17 @@
 import * as turf from '@turf/turf';
 
-export const convertGeoJsonToTurf = (geojson) => {
+export const convertGeoJsonToTurf = (geojson, allowedTypes) => {
   if (!geojson || !geojson.features) {
     throw new Error('Invalid GeoJSON object');
   }
 
-  const isValidMultiPolygon = (feature) =>
-    feature.geometry.type === 'MultiPolygon' &&
-    feature.geometry.coordinates.every(polygon =>
-      polygon.every(ring =>
-        ring.every(coord =>
-          Array.isArray(coord) && coord.length === 2 &&
-          typeof coord[0] === 'number' && typeof coord[1] === 'number'
-        )
-      )
-    );
-
-  const validFeatures = geojson.features.filter(isValidMultiPolygon);
+  const validFeatures = geojson.features.filter((feature) => {
+    return allowedTypes.includes(feature.geometry.type);
+  });
 
   if (validFeatures.length === 0) {
-    throw new Error('No valid MultiPolygon features found');
+    throw new Error(`No valid features of types: ${allowedTypes.join(', ')} found`);
   }
 
-  const turfObjects = validFeatures.map(feature =>
-    turf.multiPolygon(feature.geometry.coordinates)
-  );
-
-  return turf.featureCollection(turfObjects);
+  return turf.featureCollection(validFeatures);
 };

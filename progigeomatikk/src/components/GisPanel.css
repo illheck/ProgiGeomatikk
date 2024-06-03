@@ -29,3 +29,13 @@
     padding: 10px;
     border-radius: 5px;
   }
+  
+  .gisPanel input {
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+  }
+  
+
+  
