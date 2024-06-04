@@ -8,12 +8,15 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
   const [selectedFunction, setSelectedFunction] = useState('');
   const [selectedFiles, setSelectedFiles] = useState({ file1: null, file2: null });
   const [bufferDistance, setBufferDistance] = useState(0);
+  const [areaResult, setAreaResult] = useState(null); 
 
   const handleFunctionChange = (event) => {
     setSelectedFunction(event.target.value);
     setSelectedFiles({ file1: null, file2: null });
     setBufferDistance(0);
     setResult(null);
+    setAreaResult(null); 
+    
   };
 
   const handleFileChange = (event, fileKey) => {
@@ -39,14 +42,21 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
         alert('Please select two GeoJSON files.');
         return false;
       }
+    } else if (selectedFunction === 'area' || selectedFunction === 'centroid') {
+      if (!selectedFiles.file1) {
+        alert('Please select a GeoJSON file.');
+        return false;
+      }
     }
 
     try {
       if (selectedFunction === 'buffer') {
         convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon', 'LineString', 'Point']);
-      } else {
+      }      
+      else {
         convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon']);
         convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
+        
       }
     } catch (error) {
       alert(error.message);
@@ -56,23 +66,56 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
     return true;
   };
 
+  const unionAllFeatures = (geojson) => {
+    let combinedFeature = geojson.features[0];
+    for (let i = 1; i < geojson.features.length; i++) {
+      combinedFeature = turf.union(combinedFeature, geojson.features[i]);
+    }
+    return combinedFeature;
+  };
+
   const handleRunFunction = () => {
     if (!validateInput()) return;
 
     try {
-      const turfObj1 = convertGeoJsonToTurf(selectedFiles.file1.geojson, selectedFunction === 'buffer' ? ['MultiPolygon', 'Polygon', 'LineString', 'Point'] : ['MultiPolygon', 'Polygon']);
       let result;
       switch (selectedFunction) {
         case 'intersect':
-          const turfObj2 = convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
-          result = turf.intersect(turfObj1.features[0], turfObj2.features[0]);
+          console.log("intersect");
+          const intersectTurfObj1 = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon']);
+          const unionTurfObj1 = unionAllFeatures(intersectTurfObj1);
+          const intersectTurfObj2 = convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
+          const unionTurfObj2 = unionAllFeatures(intersectTurfObj2);
+          result = turf.intersect(unionTurfObj1, unionTurfObj2);
           break;
         case 'union':
-          const unionTurfObj2 = convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
-          result = turf.union(turfObj1.features[0], unionTurfObj2.features[0]);
+          console.log("union");
+          const unionTurfObj1ForUnion = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon']);
+          const unionTurfObj1Combined = unionAllFeatures(unionTurfObj1ForUnion);
+          const unionTurfObj2ForUnion = convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
+          const unionTurfObj2Combined = unionAllFeatures(unionTurfObj2ForUnion);
+          result = turf.union(unionTurfObj1Combined, unionTurfObj2Combined);
           break;
         case 'buffer':
-          result = turf.buffer(turfObj1.features[0], bufferDistance, { units: 'meters' });
+          console.log("buffer");
+          const bufferTurfObj = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon', 'LineString', 'Point']);
+          console.log('Buffer Turf Object:', bufferTurfObj); // Debug log
+          const bufferedFeatures = bufferTurfObj.features.map(feature => turf.buffer(feature, bufferDistance, { units: 'meters' }));
+          console.log('Buffered Features:', bufferedFeatures); // Debug log
+          result = turf.featureCollection(bufferedFeatures);
+          break;
+        case 'area':
+          console.log("area");
+          const areaTurfObj = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon']);
+          const areaTurfObjCombined = unionAllFeatures(areaTurfObj);
+          const area = turf.area(areaTurfObjCombined);
+          setAreaResult(area.toFixed(2));
+          return;
+        case 'centroid':
+          console.log("centroid");
+          const centroidTurfObj = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['Polygon', 'MultiPolygon']);
+          const centroids = centroidTurfObj.features.map(feature => turf.centroid(feature));
+          result = turf.featureCollection(centroids);
           break;
         default:
           alert('Selected function is not implemented.');
@@ -82,7 +125,7 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
       if (result) {
         const resultGeojson = {
           type: 'FeatureCollection',
-          features: [result]
+          features: result.features || [result]
         };
         const newFile = {
           name: `Result_${Date.now()}.geojson`,
@@ -106,6 +149,8 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
         <option value="intersect">Intersect</option>
         <option value="union">Union</option>
         <option value="buffer">Buffer</option>
+        <option value="area">Area of a Polygon</option>
+        <option value="centroid">Center of a polygon</option>
       </select>
 
       {selectedFunction === 'buffer' && (
@@ -165,10 +210,51 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
         </div>
       )}
 
+      {selectedFunction === 'area' && (
+        <div>
+          <label>
+            Select File:
+            <select onChange={(event) => handleFileChange(event, 'file1')}>
+              <option value="">Select a file</option>
+              {geojsonFiles.map((file, index) => (
+                <option key={index} value={index}>
+                  {file.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button onClick={handleRunFunction}>Run</button>
+        </div>
+      )}
+
+        {selectedFunction === 'centroid' && (
+                <div>
+                <label>
+                    Select File:
+                    <select onChange={(event) => handleFileChange(event, 'file1')}>
+                    <option value="">Select a file</option>
+                    {geojsonFiles.map((file, index) => (
+                        <option key={index} value={index}>
+                        {file.name}
+                        </option>
+                    ))}
+                    </select>
+                </label>
+                <button onClick={handleRunFunction}>Run</button>
+                </div>
+            )}
+
       {result && (
         <div>
           <h3>Result</h3>
           <pre>{JSON.stringify(result, null, 2)}</pre>
+        </div>
+      )}
+
+      {areaResult && ( 
+        <div>
+          <h3>Area Result</h3>
+          <p>{`Area: ${areaResult} m^2`}</p>
         </div>
       )}
     </div>
