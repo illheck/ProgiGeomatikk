@@ -5,6 +5,7 @@
     border-right: 1px solid #ccc;
     height: 100%;
     box-sizing: border-box;
+    border-radius: 10px; 
   }
   
   .gisPanel select {
@@ -21,7 +22,17 @@
   .gisPanel button {
     margin-bottom: 10px;
     width: 100%;
-    padding: 5px;
+    padding: 10px; 
+    background-color: #BFE3A5; 
+    color: black; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s; 
+  }
+  
+  .gisPanel button:hover {
+    background-color: #218838;
   }
   
   .gisPanel pre {
@@ -36,6 +47,3 @@
     padding: 5px;
     box-sizing: border-box;
   }
-  
-
-  

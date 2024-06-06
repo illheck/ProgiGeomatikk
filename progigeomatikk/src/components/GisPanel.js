@@ -3,13 +3,14 @@ import * as turf from '@turf/turf';
 import './GisPanel.css';
 import { convertGeoJsonToTurf } from './geojsonToTurf';
 
-function GisPanel({ geojsonFiles, setGeojsonFiles }) {
+const GisPanel = ({ geojsonFiles, setGeojsonFiles }) => {
   const [result, setResult] = useState(null);
   const [selectedFunction, setSelectedFunction] = useState('');
   const [selectedFiles, setSelectedFiles] = useState({ file1: null, file2: null });
   const [bufferDistance, setBufferDistance] = useState(0);
   const [areaResult, setAreaResult] = useState(null); 
 
+  //Handles a change in the function
   const handleFunctionChange = (event) => {
     setSelectedFunction(event.target.value);
     setSelectedFiles({ file1: null, file2: null });
@@ -19,6 +20,8 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
     
   };
 
+
+  //Handles change in chosen file(s)
   const handleFileChange = (event, fileKey) => {
     const selectedIndex = event.target.selectedIndex;
     setSelectedFiles((prevFiles) => ({
@@ -27,7 +30,9 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
     }));
   };
 
+  //Function to validate input
   const validateInput = () => {
+    //Checks for geojson file, and that the bufferdistance is more than 0
     if (selectedFunction === 'buffer') {
       if (!selectedFiles.file1) {
         alert('Please select a GeoJSON file.');
@@ -37,6 +42,7 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
         alert('Please enter a valid buffer distance.');
         return false;
       }
+      //Checks for geojson-file
     } else if (selectedFunction === 'union' || selectedFunction === 'intersect') {
       if (!selectedFiles.file1 || !selectedFiles.file2) {
         alert('Please select two GeoJSON files.');
@@ -49,23 +55,10 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
       }
     }
 
-    try {
-      if (selectedFunction === 'buffer') {
-        convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon', 'LineString', 'Point']);
-      }      
-      else {
-        convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon']);
-        convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
-        
-      }
-    } catch (error) {
-      alert(error.message);
-      return false;
-    }
-
     return true;
   };
 
+  //Creates a union of one or more multipolygons
   const unionAllFeatures = (geojson) => {
     let combinedFeature = geojson.features[0];
     for (let i = 1; i < geojson.features.length; i++) {
@@ -75,44 +68,56 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
   };
 
   const handleRunFunction = () => {
+    //Checks that all inputs are OK
     if (!validateInput()) return;
 
     try {
       let result;
       switch (selectedFunction) {
+
+        //Converts the files into turf-objects, creates a union of all multipolygons in the two files and then creates intersected file of the two files
         case 'intersect':
-          console.log("intersect");
           const intersectTurfObj1 = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon']);
           const unionTurfObj1 = unionAllFeatures(intersectTurfObj1);
           const intersectTurfObj2 = convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
           const unionTurfObj2 = unionAllFeatures(intersectTurfObj2);
           result = turf.intersect(unionTurfObj1, unionTurfObj2);
           break;
+
+        //Converts the files into turf-objects, creates a union of all multipolygons in the two files and then creates the union of the two files
         case 'union':
-          console.log("union");
           const unionTurfObj1ForUnion = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon']);
           const unionTurfObj1Combined = unionAllFeatures(unionTurfObj1ForUnion);
           const unionTurfObj2ForUnion = convertGeoJsonToTurf(selectedFiles.file2.geojson, ['MultiPolygon', 'Polygon']);
           const unionTurfObj2Combined = unionAllFeatures(unionTurfObj2ForUnion);
           result = turf.union(unionTurfObj1Combined, unionTurfObj2Combined);
           break;
+
+        //Converts files into turf objects
+        //The buffer functionality can handle all input features. 
+        //Iterates over all features in the file, and creates their buffer geojson
+        // All objects are added into new result file
         case 'buffer':
-          console.log("buffer");
           const bufferTurfObj = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon', 'LineString', 'Point']);
-          console.log('Buffer Turf Object:', bufferTurfObj); // Debug log
           const bufferedFeatures = bufferTurfObj.features.map(feature => turf.buffer(feature, bufferDistance, { units: 'meters' }));
-          console.log('Buffered Features:', bufferedFeatures); // Debug log
           result = turf.featureCollection(bufferedFeatures);
           break;
+
+        //Converts a polygon or multipolygon to a turfobject
+        //Creates union of all features in the geojson file
+        //Find the area of the union feature
+        //Set result with two decimals
         case 'area':
-          console.log("area");
           const areaTurfObj = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['MultiPolygon', 'Polygon']);
           const areaTurfObjCombined = unionAllFeatures(areaTurfObj);
           const area = turf.area(areaTurfObjCombined);
           setAreaResult(area.toFixed(2));
           return;
+
+        //Converts polygon or multipolygon to a turf object
+        //Creates union of all features in the geojson file
+        //Finds the centroid and stores it
         case 'centroid':
-          console.log("centroid");
           const centroidTurfObj = convertGeoJsonToTurf(selectedFiles.file1.geojson, ['Polygon', 'MultiPolygon']);
           const centroids = centroidTurfObj.features.map(feature => turf.centroid(feature));
           result = turf.featureCollection(centroids);
@@ -122,6 +127,7 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
           return;
       }
 
+      //Saves the result (if it exists) as a file with a random name and adds it to the list of geojson files (in the naigation menu and the map)
       if (result) {
         const resultGeojson = {
           type: 'FeatureCollection',
@@ -141,6 +147,13 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
     }
   };
 
+  //Dropdown menu with all functionality
+  //Checks what functionality is chosen and chooses JSX thereafter
+  //Input file and Input-field for buffer distance if buffer is chosen
+  //If intersect or union is chosen, there are two input files
+  //If area or centroid is chosen, only one input fiels is shown.
+  //All fields have a button that initializes "handleRunFunction()" if it is pushed
+  //Shows result geojson-file or the result area
   return (
     <div className="gisPanel">
       <h2>GIS Panel</h2>
@@ -226,7 +239,6 @@ function GisPanel({ geojsonFiles, setGeojsonFiles }) {
           <button onClick={handleRunFunction}>Run</button>
         </div>
       )}
-
         {selectedFunction === 'centroid' && (
                 <div>
                 <label>

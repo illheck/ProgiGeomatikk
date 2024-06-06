@@ -1,4 +1,4 @@
-import '../App.css';
+import './Trondheim.css';
 import mapboxgl from 'mapbox-gl';
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import * as turf from '@turf/turf';
@@ -6,19 +6,23 @@ import * as turf from '@turf/turf';
 
 mapboxgl.accessToken = "pk.eyJ1IjoiaWxsaGVjayIsImEiOiJjbHVtaDU2Z2IxMHNrMmpsNTNtNjRiYzdiIn0.gWSqf7Sd1J_znIEDQ8E19Q";
 
-const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList, handleDeleteFile }, ref) => {
+const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList }, ref) => {
   const [lng, setLng] = useState(10.421906);
   const [lat, setLat] = useState(63.426827);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
 
-  function addFileToMap(map, geojson, id) {
+  // Tar inn kart-objekt, geojson-fil og id til en geojson fil
+  // Returnerer hvis kart og fil ikke eksisterer eller hvis geojson-fil er tom
+
+  const addFileToMap = (map, geojson, id)  =>{
     if (!map || !geojson) return;
     if (!geojson.features || geojson.features.length === 0) {
       console.error("Invalid GeoJSON: No features found.");
       return;
     }
 
+    //Finner type geojsonobjekt (Linje, polygon eller punkt) og bestemmer stilen (farge, størrelse, gjennomsiktighet etc.)
     const type = geojson.features[0].geometry.type;
     map.addSource(id, {
       type: 'geojson',
@@ -57,13 +61,15 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
     }
   }
 
-  function removeFileFromMap(map, id) {
+  //Tar inn kart-objekt og fil-id, og fjerner et geojson objekt fra kartet
+  const removeFileFromMap = (map, id) => {
     if (map.getLayer(id)) {
       map.removeLayer(id);
       map.removeSource(id);
     }
   }
 
+  
   useImperativeHandle(ref, () => ({
     removeFileFromMap(id) {
       if (mapRef.current) {
@@ -92,7 +98,7 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
     }
   };
 
-  function highlightFileOnMap(geojson) {
+  const highlightFileOnMap = (geojson) => {
     if (!mapRef.current || !geojson) return;
     const bbox = turf.bbox(geojson);
     mapRef.current.fitBounds(bbox, { padding: 20 });
@@ -109,7 +115,7 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
     }
   }));
   useEffect(() => {
-    if (mapRef.current) return; // If map already exists, do not recreate it
+    if (mapRef.current) return; 
 
     const newMap = new mapboxgl.Map({
       container: mapContainerRef.current,
@@ -118,12 +124,12 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
       zoom: 12,
     });
 
-    mapRef.current = newMap; // Store map instance in ref
+    mapRef.current = newMap; 
   }, []);
 
   useEffect(() => {
     if (mapRef.current && geojsonFiles.length) {
-      const newFiles = geojsonFiles.slice(idList.length); // Only add new files
+      const newFiles = geojsonFiles.slice(idList.length); 
       console.log("New files to add:", newFiles);
       newFiles.forEach((file, index) => {
         const id = `new-source-${idList.length + index}`;

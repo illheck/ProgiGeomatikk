@@ -1,33 +1,45 @@
 .NavigationMenu {
     width: 20%;
-    background-color: #f0f0f0; /* Optional: background color */
+    background-color: #BFE3A5; 
     padding: 10px;
     height: 100%;
     box-sizing: border-box;
+    border-radius: 10px;
   }
   
   .NavigationMenu ul {
-    list-style-type: none; /* Remove the black dots */
-    padding: 0; /* Remove default padding */
+    list-style-type: none; 
+    padding: 0; 
   }
   
   .NavigationMenu li {
-    border: 1px solid #ccc; /* Add border around each file item */
-    border-radius: 5px; /* Optional: add border radius */
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
     padding: 10px;
-    margin-bottom: 10px; /* Add space between items */
+    margin-bottom: 10px; 
   }
   
   .NavigationMenu .file-name {
-    margin-bottom: 10px; /* Space between filename and buttons */
+    margin-bottom: 10px; 
   }
   
   .NavigationMenu .button-group {
     display: flex;
-    gap: 5px; /* Add space between buttons */
+    gap: 5px; 
   }
   
   .NavigationMenu .button-group button {
-    flex: 1 1 auto; /* Allow buttons to grow and shrink */
-    min-width: 0; /* Ensure buttons do not grow too large */
+    flex: 1 1 auto; 
+    min-width: 0; 
+    background-color: #61dafb; 
+    color: white; 
+    border: none; 
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s; 
+  }
+  
+  .NavigationMenu .button-group button:hover {
+    background-color: #0056b3; 
   }

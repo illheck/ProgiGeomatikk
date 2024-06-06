@@ -1,0 +1,30 @@
+.Trondheim {
+    flex: 1;
+    padding: 10px;
+    height: 100%;
+    box-sizing: border-box;
+    border-radius: 10px;
+    border: 2px solid white; 
+    position: relative; 
+  }
+  
+  #trondheim {
+    height: 500px;
+    border-radius: 10px; 
+  }
+  
+  .Trondheim input[type="file"] {
+    display: block;
+    margin: 0 auto 10px auto; 
+    padding: 10px;
+    background-color: #BFE3A5; 
+    color: black; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s; 
+  }
+  
+  .Trondheim input[type="file"]:hover {
+    background-color: #218838; 
+  }

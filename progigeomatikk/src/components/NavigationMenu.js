@@ -2,9 +2,10 @@ import React from 'react';
 import './NavigationMenu.css';
 
 
-function NavigationMenu({ geojsonFiles, handleDeleteFile, handleHighlightFile }) {
+const NavigationMenu = ({ geojsonFiles, handleDeleteFile, handleHighlightFile }) => {
 
 
+  //Downloads a file
   const handleDownloadFile = (file) => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(file.geojson));
     const downloadAnchorNode = document.createElement('a');
