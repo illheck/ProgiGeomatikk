@@ -1,12 +1,14 @@
 import './Trondheim.css';
-import mapboxgl from 'mapbox-gl';
+import * as mapboxgl from 'mapbox-gl';
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import * as turf from '@turf/turf';
 
 
 mapboxgl.accessToken = "pk.eyJ1IjoiaWxsaGVjayIsImEiOiJjbHVtaDU2Z2IxMHNrMmpsNTNtNjRiYzdiIn0.gWSqf7Sd1J_znIEDQ8E19Q";
 
+
 const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList }, ref) => {
+  //Trondheim coordinates
   const [lng, setLng] = useState(10.421906);
   const [lat, setLat] = useState(63.426827);
   const mapContainerRef = useRef(null);
@@ -69,7 +71,7 @@ const Trondheim = forwardRef(({ geojsonFiles, setGeojsonFiles, idList, setIdList
     }
   }
 
-  
+
   useImperativeHandle(ref, () => ({
     removeFileFromMap(id) {
       if (mapRef.current) {
